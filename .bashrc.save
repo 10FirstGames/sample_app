@@ -1,0 +1,27 @@
+# Add current git branch (if applicale) to the terminal prompt.
+function pgb {
+  ref=$(/usr/bin/git symbolic-ref HEAD 2> /dev/null) || return
+  dirty=""
+  untracked=""
+
+   # Disallow unstaged changes in the working tree
+  if ! /usr/bin/git diff-files --quiet --ignore-submodules --
+  then
+    dirty="*"
+  fi
+
+  # Disallow uncommitted changes in the index
+  if ! /usr/bin/git diff-index --cached --quiet HEAD --ignore-submodules --
+  then
+    dirty="*"
+  fi
+
+  status=`/usr/bin/git status --porcelain 2>/dev/null| grep "^??" | wc -l`
+  if [ $status -gt 0 ]; then
+    untracked="+"
+  fi
+
+  echo " ("${ref#refs/heads/}"$dirty$untracked)"
+}
+
+PS1="${PS1/\\$/\$(pgb)\\$}"
